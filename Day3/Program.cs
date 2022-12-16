@@ -2,7 +2,8 @@
 {
     private static void Main(string[] args)
     {
-        ProblemOne();
+        //ProblemOne();
+        ProblemTwo();
     }
 
     static void ProblemOne()
@@ -13,48 +14,27 @@
 
         foreach (var line in System.IO.File.ReadLines("input.txt"))
         {
+            score += line
+            .Take(line.Length / 2)
+            .Intersect(line.TakeLast(line.Length / 2))
+            .Sum(c => c <= 'Z' ? (c -'A' + 27) : (c - 'a' + 1) );
+        }
 
+        Console.WriteLine(score);
+    }
 
+    static void ProblemTwo()
+    {
+        var data = System.IO.File.ReadAllLines("input.txt");
+        int score = 0;
 
-            var partOne = line.Substring(0, line.Length / 2);
-            var partTwo = line.Substring(line.Length / 2);
+        for(int i = 0; i < data.Count(); i += 3)
+        {
+            var group = data[i .. (i + 3)];
 
-            Console.WriteLine(partOne);
-            Console.WriteLine(partTwo);
+            var common = group[0].ToList().FindAll(x => group[1].Contains(x) && group[2].Contains(x)).Distinct();
 
-            var all = partTwo.Where(c => partOne.Any(a => a == c));
-
-            foreach (var match in all)
-            {
-                /*
-                if (!matches.Contains(match))
-                {
-                    matches.Add(match);
-                }
-                else
-                    continue;*/
-
-                char convertedMatch;
-
-                Console.Write(match + " ");
-
-                if (char.IsUpper(match))
-                {
-                    convertedMatch = char.ToLower(match);
-                    score += (convertedMatch - 96);
-
-                    Console.WriteLine(((int)convertedMatch) - 96);
-                }
-                else
-                {
-                    convertedMatch = char.ToUpper(match);
-                    score += (convertedMatch - 64);
-
-                    Console.WriteLine(((int)convertedMatch) - 64);
-                }
-            }
-
-            matches.Clear();
+            score += common.Sum(c => c <= 'Z' ? (c -'A' + 27) : (c - 'a' + 1) );
         }
 
         Console.WriteLine(score);

@@ -5,7 +5,7 @@ internal partial class Program
 
     private static readonly List<string> specialChars = new() { "!", "@", "#", "$", "%", "&", "*", "-", "=", "+", @"/" };
 
-    private static bool CheckAbove(string[] input, int curLine, string match)
+    private static bool CheckAbove(string[] input, int curLine, Match match)
     {
         if (curLine == 0)
             return false;
@@ -15,12 +15,12 @@ internal partial class Program
         string curLineStr = input[curLine];
         string subLine = string.Empty;
 
-        if (curLineStr.IndexOf(match) == 0)
-            subLine = line.Substring(curLineStr.IndexOf(match), match.Length + 2);
-        else if (curLineStr.IndexOf(match) + match.Length == curLineStr.Length)
-            subLine = line.Substring(curLineStr.IndexOf(match), match.Length);
+        if (match.Index == 0)
+            subLine = line.Substring(match.Index, match.Length + 2);
+        else if (match.Index + match.Length == curLineStr.Length)
+            subLine = line.Substring(match.Index, match.Length);
         else
-            subLine = line.Substring(curLineStr.IndexOf(match) - 1, match.Length + 2);
+            subLine = line.Substring(match.Index - 1, match.Length + 2);
 
         if (specialChars.Any(c => subLine.Contains(c)))
             return true;
@@ -28,16 +28,16 @@ internal partial class Program
         return isPart;
     }
 
-    private static bool CheckFront(string[] input, int curLine, string match)
+    private static bool CheckFront(string[] input, int curLine, Match match)
     {
-        if (input[curLine].IndexOf(match) == 0)
+        if (match.Index == 0)
             return false;
 
 
 
         bool isPart = false;
         string line = input[curLine];
-        int endPos = line.IndexOf(line.Substring(line.IndexOf(match), match.Length)) - 1;
+        int endPos = match.Index - 1;
 
         if (specialChars.Any(c => c.Contains(line[endPos])))
             return true;
@@ -45,14 +45,14 @@ internal partial class Program
         return isPart;
     }
 
-    private static bool CheckBack(string[] input, int curLine, string match)
+    private static bool CheckBack(string[] input, int curLine, Match match)
     {
-        if (input[curLine].IndexOf(match) + match.Length >= input[curLine].Length)
+        if (match.Index + match.Length >= input[curLine].Length)
             return false;
 
         bool isPart = false;
         string line = input[curLine];
-        int endPos = line.IndexOf(line.Substring(line.IndexOf(match), match.Length)) + match.Length;
+        int endPos = line.IndexOf(line.Substring(match.Index, match.Length)) + match.Length;
 
         if (specialChars.Any(c => c.Contains(line[endPos])))
             return true;
@@ -60,7 +60,7 @@ internal partial class Program
         return isPart;
     }
 
-    private static bool CheckBelow(string[] input, int curLine, string match)
+    private static bool CheckBelow(string[] input, int curLine, Match match)
     {
         if (curLine == input.Length - 1)
             return false;
@@ -69,12 +69,23 @@ internal partial class Program
         string curLineStr = input[curLine];
         string subLine = string.Empty;
 
-        if (curLineStr.IndexOf(match) == 0 || int.Parse(match) < 10)
-            subLine = line.Substring(curLineStr.IndexOf(match), match.Length + 2);
-        else if (curLineStr.IndexOf(match) + match.Length == curLineStr.Length)
-            subLine = line.Substring(curLineStr.IndexOf(match), match.Length);
+        if (int.Parse(match.Value) < 10)
+        {
+            if (match.Index == 0)
+                subLine = line.Substring(match.Index, match.Length + 2);
+            else if (match.Index + match.Length == curLineStr.Length)
+                subLine = line.Substring(match.Index - 1, match.Length);
+            else
+                subLine = line.Substring(match.Index - 1, match.Length + 2);
+
+        }
+
+        if (match.Index == 0)
+            subLine = line.Substring(match.Index, match.Length + 2);
+        else if (match.Index + match.Length == curLineStr.Length)
+            subLine = line.Substring(match.Index, match.Length);
         else
-            subLine = line.Substring(curLineStr.IndexOf(match) - 1, match.Length + 2);
+            subLine = line.Substring(match.Index - 1, match.Length + 2);
 
         if (specialChars.Any(c => subLine.Contains(c)))
             return true;
@@ -97,7 +108,7 @@ internal partial class Program
 
             foreach (Match match in matches)
             {
-                if (CheckFront(input, i, match.Value))
+                if (CheckFront(input, i, match))
                 {
                     Console.WriteLine(match.Value);
                     sum += int.Parse(match.Value);
@@ -105,7 +116,7 @@ internal partial class Program
 
                     continue;
                 }
-                else if (CheckBack(input, i, match.Value))
+                else if (CheckBack(input, i, match))
                 {
                     Console.WriteLine(match.Value);
                     sum += int.Parse(match.Value);
@@ -115,7 +126,7 @@ internal partial class Program
 
                     continue;
                 }
-                else if (CheckBelow(input, i, match.Value))
+                else if (CheckBelow(input, i, match))
                 {
                     Console.WriteLine(match.Value);
                     sum += int.Parse(match.Value);
@@ -125,7 +136,7 @@ internal partial class Program
 
                     continue;
                 }
-                else if (CheckAbove(input, i, match.Value))
+                else if (CheckAbove(input, i, match))
                 {
                     Console.WriteLine(match.Value);
                     sum += int.Parse(match.Value);

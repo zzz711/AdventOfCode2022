@@ -5,9 +5,20 @@ internal partial class Program
     [GeneratedRegex(@"\d+")]
     private static partial Regex MyRegex();
 
-    private static Dictionary<long, long> CreateMap(List<string> lines)
+    private static IEnumerable<long> CreateRange(long start,long count)
     {
-        var mapping = new Dictionary<long, long>();
+        var limit = start + count;
+
+        while(start < limit)
+        {
+            yield return start;
+            start++;
+        }
+    }
+
+    private static List<KeyValuePair<long, long>> CreateMap(List<string> lines)
+    {
+        var mapping = new List<KeyValuePair<long, long>>();
 
         foreach(var line in lines)
         {
@@ -16,14 +27,12 @@ internal partial class Program
             var rangeStart = long.Parse(matches[0].Value);
             var rangeLength = long.Parse(matches[2].Value);
 
-            for(long i = 0; i < rangeLength; i++)
-            {
-                if(!mapping.ContainsKey(startIndex + i))
-                    mapping.Add(startIndex + i, rangeStart + i);
-                else
-                    mapping[startIndex + 1] = rangeStart + 1;
+            List<long> keys = CreateRange(startIndex, rangeLength).ToList();
+            List<long> vals = CreateRange(rangeStart, rangeLength).ToList();
 
-            }
+            var z = keys.Zip( vals, (first, second) => new KeyValuePair<long, long>(first, second)).ToList();
+            mapping.AddRange(z);
+
         }
 
         return mapping;
@@ -42,13 +51,13 @@ internal partial class Program
         var tempHumidIndex = input.FindIndex(item => item.Contains("temperature-to-humidity"));
         var humidLocIndex = input.FindIndex(item => item.Contains("humidity-to-location"));
 
-        Dictionary<long,long> seedSoilMap = CreateMap(input.GetRange(seedSoilIndex + 1, soilFertIndex - 2 - seedSoilIndex));
-        Dictionary<long,long> soilFertMap = CreateMap(input.GetRange(soilFertIndex + 1, fertWaterIndex - 2 - soilFertIndex ));
-        Dictionary<long,long> fertWaterMap = CreateMap(input.GetRange(fertWaterIndex + 1, waterLightIndex - 2 - fertWaterIndex ));
-        Dictionary<long,long> waterLightMap = CreateMap(input.GetRange(waterLightIndex + 1, lightTempIndex - 2 - waterLightIndex ));
-        Dictionary<long,long> lightTempMap = CreateMap(input.GetRange(lightTempIndex + 1, tempHumidIndex - 2 - lightTempIndex ));
-        Dictionary<long,long> tempHumidMap = CreateMap(input.GetRange(tempHumidIndex + 1, humidLocIndex - 2 - tempHumidIndex ));
-        Dictionary<long,long> humidLocMap = CreateMap(input.GetRange(humidLocIndex + 1, input.Count - humidLocIndex - 1));
+        var seedSoilMap = CreateMap(input.GetRange(seedSoilIndex + 1, soilFertIndex - 2 - seedSoilIndex));
+        var soilFertMap = CreateMap(input.GetRange(soilFertIndex + 1, fertWaterIndex - 2 - soilFertIndex ));
+        var fertWaterMap = CreateMap(input.GetRange(fertWaterIndex + 1, waterLightIndex - 2 - fertWaterIndex ));
+        var waterLightMap = CreateMap(input.GetRange(waterLightIndex + 1, lightTempIndex - 2 - waterLightIndex ));
+        var lightTempMap = CreateMap(input.GetRange(lightTempIndex + 1, tempHumidIndex - 2 - lightTempIndex ));
+        var tempHumidMap = CreateMap(input.GetRange(tempHumidIndex + 1, humidLocIndex - 2 - tempHumidIndex ));
+        var humidLocMap = CreateMap(input.GetRange(humidLocIndex + 1, input.Count - humidLocIndex - 1));
 
         var seedMatches = MyRegex().Matches(seedList).ToList();
         var locationList = new List<long>();
@@ -58,35 +67,38 @@ internal partial class Program
             long seedValue = long.Parse(seed.Value);
             long passThrough = 0;
 
-            if(seedSoilMap.ContainsKey(seedValue)) //soil
-                passThrough = seedSoilMap[seedValue];
+            if(seedSoilMap.Where( s => s.Key == seedValue).FirstOrDefault() is var seedTemp && !seedTemp.Equals(default( KeyValuePair<long, long>))) //soil
+                passThrough = seedTemp.Value;
             else
                 passThrough = seedValue;
 
-                Console.WriteLine("Soil " + passThrough);
+//                Console.WriteLine("Soil " + passThrough);
 
-            if(soilFertMap.ContainsKey(passThrough)) //fert
-                passThrough = soilFertMap[passThrough];
+            if(!(soilFertMap.Where( s => s.Key == passThrough).FirstOrDefault() is var fertTemp && !seedTemp.Equals(default( KeyValuePair<long, long>)))) //fert
+                passThrough = fertTemp.Value;
 
             //    Console.WriteLine("fert " + passThrough);
 
-            if(fertWaterMap.ContainsKey(passThrough)) //water
-                passThrough = fertWaterMap[passThrough];
+            if(!(fertWaterMap.Where( s => s.Key == passThrough).FirstOrDefault() is var waterTemp && !seedTemp.Equals(default( KeyValuePair<long, long>)))) //water
+                passThrough = waterTemp.Value;
 
               //  Console.WriteLine("water " + passThrough);
 
-            if(lightTempMap.ContainsKey(passThrough)) //light
-                passThrough = lightTempMap[passThrough];
+            if(!(waterLightMap.Where( s => s.Key == passThrough).FirstOrDefault() is var lightTemp && !seedTemp.Equals(default( KeyValuePair<long, long>))))
+                passThrough = lightTemp.Value;                
+
+            if(!(lightTempMap.Where( s => s.Key == passThrough).FirstOrDefault() is var tempTemp && !seedTemp.Equals(default( KeyValuePair<long, long>)))) //light
+                passThrough = tempTemp.Value;
 
             //Console.WriteLine("light " + passThrough);
 
-            if(tempHumidMap.ContainsKey(passThrough)) //temp
-                passThrough = tempHumidMap[passThrough];
+            if(!(tempHumidMap.Where( s => s.Key == passThrough).FirstOrDefault() is var humidTemp && !seedTemp.Equals(default( KeyValuePair<long, long>)))) //temp
+                passThrough = humidTemp.Value;
 
             //Console.WriteLine("temp " + passThrough);
 
-            if(humidLocMap.ContainsKey(passThrough)) //humid
-                passThrough = humidLocMap[passThrough];
+            if(!(humidLocMap.Where( s => s.Key == passThrough).FirstOrDefault() is var locTemp && !seedTemp.Equals(default( KeyValuePair<long, long>)))) //humid
+                passThrough = locTemp.Value;
 
             //Console.WriteLine("humid " + passThrough);
 

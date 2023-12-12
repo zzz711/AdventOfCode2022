@@ -5,15 +5,20 @@ internal partial class Program
     [GeneratedRegex(@"\d+")]
     private static partial Regex MyRegex();
 
-    private static IEnumerable<long> CreateRange(long start,long count)
+    private static long FindValue(long val, List<KeyValuePair<long, long>> map)
     {
-        var limit = start + count;
 
-        while(start < limit)
+        for(int i = 0; i < map.Count; i += 2)
         {
-            yield return start;
-            start++;
+            if(map[i].Key <= val && val <= map[i + 1].Key)
+            {
+                long difference = map[i +1].Key - val;
+                val = map[i +1].Value - difference;
+                break;
+            }
         }
+
+        return val;
     }
 
     private static List<KeyValuePair<long, long>> CreateMap(List<string> lines)
@@ -27,11 +32,8 @@ internal partial class Program
             var rangeStart = long.Parse(matches[0].Value);
             var rangeLength = long.Parse(matches[2].Value);
 
-            List<long> keys = CreateRange(startIndex, rangeLength).ToList();
-            List<long> vals = CreateRange(rangeStart, rangeLength).ToList();
-
-            var z = keys.Zip( vals, (first, second) => new KeyValuePair<long, long>(first, second)).ToList();
-            mapping.AddRange(z);
+            mapping.Add(new KeyValuePair<long, long>(startIndex, rangeStart));
+            mapping.Add(new KeyValuePair<long, long>(startIndex + rangeLength -1, rangeStart + rangeLength -1));
 
         }
 
@@ -67,40 +69,26 @@ internal partial class Program
             long seedValue = long.Parse(seed.Value);
             long passThrough = 0;
 
-            if(seedSoilMap.Where( s => s.Key == seedValue).FirstOrDefault() is var seedTemp && !seedTemp.Equals(default( KeyValuePair<long, long>))) //soil
-                passThrough = seedTemp.Value;
-            else
-                passThrough = seedValue;
+            //soil
+            passThrough = FindValue(seedValue, seedSoilMap);
 
-//                Console.WriteLine("Soil " + passThrough);
+            //fert
+            passThrough = FindValue(passThrough, soilFertMap);
 
-            if(!(soilFertMap.Where( s => s.Key == passThrough).FirstOrDefault() is var fertTemp && !seedTemp.Equals(default( KeyValuePair<long, long>)))) //fert
-                passThrough = fertTemp.Value;
+            //water
+            passThrough = FindValue(passThrough, fertWaterMap);
+        
+            //light
+            passThrough = FindValue(passThrough, waterLightMap);
 
-            //    Console.WriteLine("fert " + passThrough);
+            //temp
+            passThrough = FindValue(passThrough, lightTempMap);
 
-            if(!(fertWaterMap.Where( s => s.Key == passThrough).FirstOrDefault() is var waterTemp && !seedTemp.Equals(default( KeyValuePair<long, long>)))) //water
-                passThrough = waterTemp.Value;
+            //humid
+            passThrough = FindValue(passThrough, tempHumidMap);
 
-              //  Console.WriteLine("water " + passThrough);
-
-            if(!(waterLightMap.Where( s => s.Key == passThrough).FirstOrDefault() is var lightTemp && !seedTemp.Equals(default( KeyValuePair<long, long>))))
-                passThrough = lightTemp.Value;                
-
-            if(!(lightTempMap.Where( s => s.Key == passThrough).FirstOrDefault() is var tempTemp && !seedTemp.Equals(default( KeyValuePair<long, long>)))) //light
-                passThrough = tempTemp.Value;
-
-            //Console.WriteLine("light " + passThrough);
-
-            if(!(tempHumidMap.Where( s => s.Key == passThrough).FirstOrDefault() is var humidTemp && !seedTemp.Equals(default( KeyValuePair<long, long>)))) //temp
-                passThrough = humidTemp.Value;
-
-            //Console.WriteLine("temp " + passThrough);
-
-            if(!(humidLocMap.Where( s => s.Key == passThrough).FirstOrDefault() is var locTemp && !seedTemp.Equals(default( KeyValuePair<long, long>)))) //humid
-                passThrough = locTemp.Value;
-
-            //Console.WriteLine("humid " + passThrough);
+            //location
+            passThrough = FindValue(passThrough, humidLocMap);
 
             locationList.Add(passThrough);
         }

@@ -29,30 +29,35 @@ internal partial class Program
 
     private static void CountCards(List<string> lines)
     {
+        int totalCards = 0;
+        var cardCount = new List<int>(new int[lines.Count]);
 
-        var copiedList = new List<string>();
 
         for (int i = 0; i < lines.Count; i++)
         {
-            var splitLine = lines[i].Split(": ");
-            splitLine = splitLine[1].Trim().Split(" | ");
-
-            var winningNums = MyRegex().Matches(splitLine[0]).ToList();
-            var nums = MyRegex().Matches(splitLine[1]).ToList();
-
-            var matches = nums.Where(n => winningNums.Any(w => w.Value.Equals(n.Value))).ToList();
-
-            if (matches.Count > 0)
+            cardCount[i]++;
+            for (int c = 1; c <= cardCount[i]; c++)
             {
-                var range = lines.GetRange(i + 1, matches.Count);
-                copiedList.AddRange(range);
-                lines.AddRange(range);
+                var splitLine = lines[i].Split(": ");
+                splitLine = splitLine[1].Trim().Split(" | ");
+
+                var winningNums = MyRegex().Matches(splitLine[0]).ToList();
+                var nums = MyRegex().Matches(splitLine[1]).ToList();
+
+                var matches = nums.Where(n => winningNums.Any(w => w.Value.Equals(n.Value))).ToList();
+
+                for (int j = i + 1; j <= (i + matches.Count); j++)
+                {
+                    cardCount[j]++;
+                }
             }
         }
 
-        lines.ForEach(l => Console.WriteLine(l));
-        Console.WriteLine(lines.Count);
-        Console.WriteLine(copiedList.Count);
+        foreach (var line in cardCount)
+        {
+            totalCards += line;
+        }
+        Console.WriteLine(totalCards);
     }
 
     private static void Main(string[] args)

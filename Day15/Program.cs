@@ -43,10 +43,12 @@ internal class Program
 
         foreach (var lens in sequence)
         {
-            var box = CalculateHash(lens[..2]);
+            
 
             if (lens.Contains('='))
             {
+                var box = CalculateHash(lens[..lens.IndexOf('=')]);
+
                 if(boxes[box] == null)
                 {
                     boxes[box] = [lens.Replace(lens[lens.IndexOf('=')], ' ')];
@@ -61,11 +63,13 @@ internal class Program
                 }
                 else
                 {
-                    boxes[box].Add(lens.Replace(lens[2], ' '));
+                    boxes[box].Add(lens.Replace(lens[lens.IndexOf('=')], ' '));
                 }
             }
             else if (lens.Contains('-'))
             {
+                var box = CalculateHash(lens[..lens.IndexOf('-')]);
+
                 if(boxes[box] == null)
                     continue;
 

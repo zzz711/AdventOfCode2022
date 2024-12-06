@@ -68,20 +68,24 @@ internal class Program
         {
             for (int j = data[i].Length - 1; j > 0; j--)
             {
-                if (i + 3 >= data.Length || j - 3 <= 0)
+                try
                 {
-                    break;
+                    if (i + 3 >= data.Length || j - 3 < -1)
+                    {
+                        break;
+                    }
+                    else if (data[i][j] == pattern[0] && data[i + 1][j - 1] == pattern[1]
+                    && data[i + 2][j - 2] == pattern[2] && data[i + 3][j - 3] == pattern[3])
+                    {
+                        matches++;
+                    }
                 }
-                else if (data[i][j] == pattern[0] && data[i + 1][j - 1] == pattern[1]
-                && data[i + 2][j - 2] == pattern[2] && data[i + 3][j - 3] == pattern[3])
-                {
-                    matches++;
-                }
+                catch (IndexOutOfRangeException) {}
             }
-        }
+            }
 
-        return matches;
-    }
+            return matches;
+        }
 
     private static void PartOne(string[] data)
     {
@@ -99,7 +103,7 @@ internal class Program
 
     private static void Main(string[] args)
     {
-        var input = File.ReadAllLines("input.txt");
+        var input = File.ReadAllLines("/home/zzz711/Documents/AdventOfCode/Day4/input.txt");
         PartOne(input);
     }
 }

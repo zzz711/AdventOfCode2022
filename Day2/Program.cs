@@ -42,74 +42,71 @@
 
     private static void PartTwo(List<List<int>> data)
     {
-        bool isIncreasing = false;
-        bool removed = false;
         int safe = 0;
-
+        
         foreach (var line in data)
         {
-            isIncreasing = line[0] < line[1];
-            for (int i = 1; i < line.Count; i++)
+            if(IsSafe(line))
             {
-                if (isIncreasing)
+                safe++;
+            }
+            else
+            {
+                for (int i = 0; i < line.Count; i++)
                 {
-                    var difference = line[i] - line[i - 1];
-                    if (difference > 0 && difference < 4 && i == line.Count - 1)
+                    List<int> newLine = new(line);
+                    newLine.RemoveAt(i);
+                    if (IsSafe(newLine))
                     {
                         safe++;
-                    }
-                    else if (difference < 1 || difference > 3)
-                    {
-                        if (!removed)
-                        {
-                            if (i != line.Count - 1)
-                            {
-                                difference = line[i + 1] - line[i - 1];
-                                if (difference > 0 && difference < 4)
-                                {
-                                    line.RemoveAt(i);
-                                    removed = true;
-                                }
-                            }
-                        }
-                        else
-                            break;
-                    }
-                }
-                else
-                {
-                    var difference = line[i - 1] - line[i];
-                    if (difference > 0 && difference < 4 && i == line.Count - 1)
-                    {
-                        safe++;
-                    }
-                    else if (difference < 1 || difference > 3)
-                    {
-                        if (!removed)
-                        {
-                            if (i != line.Count - 1)
-                            {
-                                difference = line[i - 1] - line[i + 1];
-                                if (difference > 0 && difference < 4)
-                                {
-                                    line.RemoveAt(i);
-                                    removed = true;
-                                }
-                            }
-                        }
-                        else
-                            break;
+                        break;
                     }
                 }
             }
-            removed = false;
         }
+
         Console.WriteLine(safe);
+    }
+
+    private static bool IsSafe(List<int> line)
+    {
+        bool isSafe = false;
+        bool isIncreasing = line[0] < line[1];
+        for (int i = 1; i < line.Count; i++)
+        {
+            if (isIncreasing)
+            {
+                var difference = line[i] - line[i - 1];
+                if (difference > 0 && difference < 4 && i == line.Count - 1)
+                {
+                    isSafe = true;
+                }
+                else if (difference < 1 || difference > 3)
+                {
+                    isSafe = false;
+                    break;
+                }
+            }
+            else
+            {
+                var difference = line[i - 1] - line[i];
+                if (difference > 0 && difference < 4 && i == line.Count - 1)
+                {
+                    isSafe = true;
+                }
+                else if (difference < 1 || difference > 3)
+                {
+                    isSafe = false;
+                    break;
+                }
+            }
+        }
+        return isSafe;
     }
 
     private static void Main(string[] args)
     {
-        var lines = File.ReadAllLines("input.txt");
+        var lines = File.ReadAllLines("/home/zzz711/Documents/AdventOfCode/Day2/input.txt");
         var data = new List<List<int>>();
         var parsedLine = new List<int>();
 

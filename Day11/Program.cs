@@ -1,50 +1,53 @@
-﻿internal class Program
-{
-    private static void PartOne(List<double> stones, int runCounter)
-    {
-        
-        for (int i = 0; i < runCounter; i++)
-        {
-            List<Tuple<int,double>> updates = [];
+﻿using System.Formats.Asn1;
 
-            for (int j = 0; j < stones.Count; j++)
+internal class Program
+{
+    Dictionary<(ulong number, int numberOfTimes), ulong> cache = new();
+    ulong answer = 0;
+
+    private ulong PartOne(ulong stone, int runCounter)
+    {
+        if (runCounter == 0)
+            return 1;
+        else
+        {
+
+            if (cache.TryGetValue((stone, runCounter), out ulong result)) return result;
+
+            if (stone == 0)
             {
-                if(stones[j] == 0)
+                result = PartOne(1, runCounter - 1);
+            }
+            else
+            {
+                var current = stone.ToString();
+
+                if (current.Length % 2 == 0)
                 {
-                    stones[j] = 1;
-                }
-                else if(stones[j].ToString().Length % 2 == 0)
-                {
-                    var half = stones[j].ToString().Length / 2;
-                    var tmp = stones[j];
-                    stones[j] = double.Parse(tmp.ToString()[..half]);
-                    Tuple<int,double> tuple = new(j+1, double.Parse(tmp.ToString()[half..]));
-                    updates.Add(tuple);
+                    var half = current.Length / 2;
+                    var tmp = current;
+                    result += PartOne(ulong.Parse(tmp.ToString()[half..]), runCounter - 1);
+                    result += PartOne(ulong.Parse(tmp.ToString()[..half]), runCounter - 1);
                 }
                 else
                 {
-                    stones[j] *= 2024;
+                    result = PartOne(stone * 2024, runCounter - 1);
                 }
             }
-
-            foreach(Tuple<int,double> tuple in updates)
-            {
-                stones.Insert(tuple.Item1, tuple.Item2);
-            }
+            cache[(stone, runCounter)] = result;
+            return result;
         }
-
-        Console.WriteLine(stones.Count);
     }
 
     private static void Main(string[] args)
     {
-        var input = File.ReadAllText("/home/zzz711/Documents/AdventOfCode/Day11/input.txt").Split(' ');
-        List<double> rocks = [];
-        foreach (var stone in input)
+        Program program = new();
+        var input = File.ReadAllText("/home/zzz711/Documents/AdventOfCode/Day11/input.txt").Split(' ').Select(a => ulong.Parse(a)).ToList();
+        // PartOne(rocks, 25);
+        foreach (var number in input)
         {
-            rocks.Add(double.Parse(stone.Trim()));
+            program.answer += program.PartOne(number, 75);
         }
-       // PartOne(rocks, 25);
-        PartOne(rocks, 75);
+        Console.WriteLine(program.answer);
     }
 }

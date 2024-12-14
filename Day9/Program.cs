@@ -2,27 +2,27 @@
 
 internal class Program
 {
-    private static string BuildProcess(string input)
+    private static List<Tuple<int, string>> BuildProcess(string input)
     {
-        string process = string.Empty;
+        List<Tuple<int, string>> process = new();
         int counter = 0;
 
         for (int i = 0; i < input.Length; i++)
         {
-            var times = int.Parse(input[i].ToString());            
+            var times = int.Parse(input[i].ToString());
             for (int j = 0; j != times; j++)
             {
-                if(i % 2 == 0)
+                if (i % 2 == 0)
                 {
-                    process += counter.ToString();
+                    process.Add( new Tuple<int, string>(i, counter.ToString()));
                 }
                 else
                 {
-                    process += ".";
+                    process.Add( new Tuple<int, string>(i, "."));
                 }
             }
 
-            if( i % 2 == 0)
+            if (i % 2 == 0)
             {
                 counter++;
             }
@@ -33,22 +33,34 @@ internal class Program
 
     private static void PartOne(string input)
     {
-        var startingStage = new StringBuilder(BuildProcess(input));
+        var startingStage = BuildProcess(input);
         double checksum = 0;
 
-        for(int i = startingStage.Length - 1; i > 0; i--)
+        for (int i = startingStage.Count - 1; i > 0; i--)
         {
-            string currentStage = startingStage.ToString();
-            int empty = currentStage.IndexOf('.');
-            startingStage[empty] = startingStage[i];
-            startingStage[i] = '.';
-        } 
+            if(!startingStage[i].Equals("."))
+            {
+                var period = startingStage.Where( x => x.Item2.Equals(".")).FirstOrDefault();
+                if (period != default(Tuple<int, string>))
+                {
+                    int idx = startingStage.IndexOf(period);
+                    Tuple<int, string> swap = startingStage[idx];
+                    startingStage[idx] = startingStage[i];
+                    startingStage[i] = swap;
+                }
+                else
+                    break;
 
-        startingStage = startingStage.Remove(startingStage.ToString().IndexOf('.'), 1);
-        string finalString = startingStage.ToString()[..startingStage.ToString().IndexOf('.')];
-        for(int i = 0; i < finalString.Length; i++)
+            }
+        }
+
+        startingStage.Remove(startingStage[1]);
+
+        int endIndex = startingStage.IndexOf(startingStage.Where( x => x.Item2.Equals(".") ).First());
+
+        for (int i = 0; i < endIndex; i++)
         {
-            checksum += int.Parse(finalString[i].ToString()) * i;
+            checksum += int.Parse(startingStage[i].Item2) * i;
         }
 
         Console.WriteLine(checksum);

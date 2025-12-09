@@ -45,19 +45,21 @@ foreach (string currentJolt in data)
     Array.Sort(joltArray);
     joltArray = joltArray.Reverse().ToArray();
 
-    string sortedJolt = new(joltArray);
-    sortedJolt = sortedJolt.Substring(0, 12);
-    
-    
+    string sortedJolt = new(joltArray);    
     char[] joltArr = new char[currentJolt.Length];
 
 //reorder
     foreach (char volt in sortedJolt)
     {
         int index = currentJolt.IndexOf(volt);
-        joltArr[index] = volt; //right track. need to better handle duplicates
+        while(joltArr[index] != 0)
+        {
+            index = currentJolt.IndexOf(volt, ++index);
+        }
+        joltArr[index] = volt;
     }
 
+    joltArr = joltArr.Where(val => val != 0).ToArray();
     
     List<char> joltList = joltArr.ToList(); 
     joltList = joltList.Where(x => !string.IsNullOrEmpty(x.ToString())).ToList();
